@@ -31,21 +31,35 @@ $app->add(TwigMiddleware::createFromContainer($app));
 
 $container->set('router', fn() => $app->getRouteCollector()->getRouteParser());
 
+function getProducts($c, $name) {
+    $products = $c->get('db')->get('products');
+
+    if (empty($name)) {
+        return $products;
+    }
+
+    return array_filter($products, fn($item) => str_contains(mb_strtolower($item['name']), mb_strtolower($name)));
+}
+
 $app->get('/', function (Request $request, Response $response) {
     $filter = $request->getQueryParams()['name'] ?? null;
 
-    $products = $this->get('db')->get('products');
-
-    if (!empty($filter)) {
-        $products = array_filter($products, fn($item) => str_contains(mb_strtolower($item['name']), mb_strtolower($filter)));
-    }
-
     return $this->get('view')->render($response, 'layout.twig', [
         'filter' => $filter,
-        'products' => $products,
+        'products' => getProducts($this, $filter),
         'cart' => $this->get('db')->get('cart'),
     ]);
 })->setName('products');
+
+$app->get('/ajax/products', function (Request $request, Response $response) {
+    $filter = $request->getQueryParams()['term'] ?? null;
+
+    $products = getProducts($this, $filter);
+
+    $response->getBody()->write(json_encode(Arr::pluck($products, 'name')));
+
+    return $response->withHeader('Content-Type', 'application/json');
+})->setName('ajax.products');
 
 function add($c, int $productId) {
     $products = $c->get('db')->get('products');

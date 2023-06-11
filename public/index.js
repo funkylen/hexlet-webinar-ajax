@@ -1,3 +1,7 @@
+$("#search").autocomplete({
+    source: '/ajax/products',
+});
+
 function add(productId) {
     var btnAddId = `#product-${productId}-add-btn`;
     var btnRemoveId = `#product-${productId}-remove-btn`;
