@@ -47,28 +47,56 @@ $app->get('/', function (Request $request, Response $response) {
     ]);
 })->setName('products');
 
-$app->post('/add/{product_id}', function (Request $request, Response $response, $args) {
-    $products = $this->get('db')->get('products');
-    $cart = $this->get('db')->get('cart');
+function add($c, int $productId) {
+    $products = $c->get('db')->get('products');
+    $cart = $c->get('db')->get('cart');
 
-    $product = Arr::first($products, fn($item) => $item['id'] === (int) $args['product_id']);
+    $product = Arr::first($products, fn($item) => $item['id'] === $productId);
 
     if (!$product) {
         throw new \Exception('product_id not found');
     }
 
     $cart[] = $product['id'];
-    $this->get('db')->set('cart', array_unique($cart));
+    $c->get('db')->set('cart', array_values(array_unique($cart)));
+
+    return $cart;
+}
+
+$app->post('/add/{product_id}', function (Request $request, Response $response, $args) {
+    add($this, $args['product_id']);
 
     return $response->withHeader('Location', $this->get('router')->urlFor('products'))->withStatus(302);
 })->setName('add');
 
-$app->post('/remove/{product_id}', function (Request $request, Response $response, $args) {
-    $cart = $this->get('db')->get('cart');
+$app->post('/ajax/add/{product_id}', function (Request $request, Response $response, $args) {
+    $cart = add($this, $args['product_id']);
 
-    $this->get('db')->set('cart', array_filter($cart, fn($id) => $id !== (int) $args['product_id']));
+    $response->getBody()->write(json_encode($cart));
+
+    return $response->withHeader('Content-Type', 'application/json');
+})->setName('ajax.add');
+
+function remove($c, int $productId) {
+    $cart = $c->get('db')->get('cart');
+
+    $c->get('db')->set('cart', array_values(array_filter($cart, fn($id) => $id !== $productId)));
+
+    return $c->get('db')->get('cart');
+}
+
+$app->post('/remove/{product_id}', function (Request $request, Response $response, $args) {
+    remove($this, $args['product_id']);
 
     return $response->withHeader('Location', $this->get('router')->urlFor('products'))->withStatus(302);
 })->setName('remove');
+
+$app->post('/ajax/remove/{product_id}', function (Request $request, Response $response, $args) {
+    $cart = remove($this, $args['product_id']);
+
+    $response->getBody()->write(json_encode($cart));
+
+    return $response->withHeader('Content-Type', 'application/json');
+})->setName('ajax.remove');
 
 $app->run();
