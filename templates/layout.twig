@@ -45,7 +45,7 @@
 		<!-- Контейнер с карточками товаров -->
 		<div class="container mt-5">
 			<form action="{{ url_for('products') }}" class="input-group mb-3">
-				<input id="search" type="text" class="form-control" placeholder="Введите запрос" aria-label="Введите запрос" aria-describedby="basic-addon2" name="name">
+				<input value="{{ filter }}" id="search" type="text" class="form-control" placeholder="Введите запрос" aria-label="Введите запрос" aria-describedby="basic-addon2" name="name">
 
 				<div class="input-group-append">
 					<button class="btn btn-outline-secondary" type="submit">Найти</button>

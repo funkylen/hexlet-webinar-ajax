@@ -14,7 +14,11 @@ require __DIR__ . '/../vendor/autoload.php';
 $container = new Container();
 
 $container->set('view', function () {
-    return Twig::create(__DIR__ . '/../templates', ['cache' => false]);
+    $twig = Twig::create(__DIR__ . '/../templates', ['cache' => false]);
+    $twig->addExtension(new \Twig\Extension\DebugExtension());
+    $twig->getEnvironment()->enableDebug();
+
+    return $twig;
 });
 
 $container->set('db', function () {
@@ -37,6 +41,7 @@ $app->get('/', function (Request $request, Response $response) {
     }
 
     return $this->get('view')->render($response, 'layout.twig', [
+        'filter' => $filter,
         'products' => $products,
         'cart' => $this->get('db')->get('cart'),
     ]);
