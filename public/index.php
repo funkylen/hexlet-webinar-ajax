@@ -27,9 +27,17 @@ $app->add(TwigMiddleware::createFromContainer($app));
 
 $container->set('router', fn() => $app->getRouteCollector()->getRouteParser());
 
-$app->get('/', function (Request $request, Response $response, $args) {
+$app->get('/', function (Request $request, Response $response) {
+    $filter = $request->getQueryParams()['name'] ?? null;
+
+    $products = $this->get('db')->get('products');
+
+    if (!empty($filter)) {
+        $products = array_filter($products, fn($item) => str_contains(mb_strtolower($item['name']), mb_strtolower($filter)));
+    }
+
     return $this->get('view')->render($response, 'layout.twig', [
-        'products' => $this->get('db')->get('products'),
+        'products' => $products,
         'cart' => $this->get('db')->get('cart'),
     ]);
 })->setName('products');
