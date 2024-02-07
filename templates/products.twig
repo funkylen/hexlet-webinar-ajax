@@ -1,0 +1,48 @@
+{% extends "layout.twig" %}
+
+{% block content %}
+    <form action="{{ url_for('products') }}" class="input-group mb-3">
+        <input value="{{ filter }}" id="search" type="text" class="form-control" placeholder="Введите запрос" aria-label="Введите запрос"
+               aria-describedby="basic-addon2" name="name">
+
+        <div class="input-group-append">
+            <button class="btn btn-outline-secondary" type="submit">Найти</button>
+        </div>
+    </form>
+
+
+    <!-- Ряды и колонки для размещения карточек товаров -->
+    <div class="row">
+
+        {% for product in products %}
+
+            <!-- Карточка товара -->
+            <div class="col-sm-4">
+                <div class="card mb-3">
+                    <img src="https://via.placeholder.com/350x150" class="card-img-top" alt="...">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ product.name }}</h5>
+                        <p class="card-text text-truncate" style="height: 20px;">{{ product.description }}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+
+                            <span class="text-muted">{{ product.price }}$</span>
+                            <!-- Здесь разместите блок с ценой продукта, например, с классом card-subtitle и стилями для выделения -->
+                            {% if product.id in cart %}
+                                <form action="{{ url_for('remove', { 'product_id': product.id }) }}" method="post">
+                                    <button class="btn btn-outline-danger btn-sm">Убрать из корзины</button>
+                                </form>
+                            {% else %}
+                                <form action="{{ url_for('add', { 'product_id': product.id }) }}" method="post">
+                                    <button class="btn btn-primary btn-sm">Добавить в корзину</button>
+                                </form>
+                            {% endif %}
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        {% endfor %}
+
+    </div>
+{% endblock %}

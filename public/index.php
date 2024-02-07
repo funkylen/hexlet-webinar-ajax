@@ -40,16 +40,37 @@ $app->get('/', function (Request $request, Response $response) {
         $products = array_filter($products, fn($item) => str_contains(mb_strtolower($item['name']), mb_strtolower($filter)));
     }
 
-    return $this->get('view')->render($response, 'layout.twig', [
-        'filter' => $filter,
+    return $this->get('view')->render($response, 'products.twig', [
+        'filter'   => $filter,
         'products' => $products,
-        'cart' => $this->get('db')->get('cart'),
+        'cart'     => array_keys($this->get('db')->get('cart')),
     ]);
 })->setName('products');
 
+$app->get('/cart', function (Request $request, Response $response) {
+    $products = $this->get('db')->get('products');
+    $cart     = $this->get('db')->get('cart');
+
+    $cartProducts = [];
+
+    foreach ($cart as $id => $count) {
+        $product        = Arr::first($products, fn($item) => $item['id'] === $id);
+
+        $cartProducts[] = [
+            'id'          => $id,
+            'name'        => $product['name'],
+            'description' => $product['description'],
+            'count'       => $count,
+            'price'       => $product['price'] * $count,
+        ];
+    }
+
+    return $this->get('view')->render($response, 'cart.twig', compact('cartProducts', 'cart'));
+})->setName('cart');
+
 $app->post('/add/{product_id}', function (Request $request, Response $response, $args) {
     $products = $this->get('db')->get('products');
-    $cart = $this->get('db')->get('cart');
+    $cart     = $this->get('db')->get('cart');
 
     $product = Arr::first($products, fn($item) => $item['id'] === (int) $args['product_id']);
 
@@ -57,8 +78,8 @@ $app->post('/add/{product_id}', function (Request $request, Response $response, 
         throw new \Exception('product_id not found');
     }
 
-    $cart[] = $product['id'];
-    $this->get('db')->set('cart', array_unique($cart));
+    $cart[$product['id']] = 1;
+    $this->get('db')->set('cart', $cart);
 
     return $response->withHeader('Location', $this->get('router')->urlFor('products'))->withStatus(302);
 })->setName('add');
@@ -66,7 +87,9 @@ $app->post('/add/{product_id}', function (Request $request, Response $response, 
 $app->post('/remove/{product_id}', function (Request $request, Response $response, $args) {
     $cart = $this->get('db')->get('cart');
 
-    $this->get('db')->set('cart', array_filter($cart, fn($id) => $id !== (int) $args['product_id']));
+    unset($cart[(int) $args['product_id']]);
+
+    $this->get('db')->set('cart', $cart);
 
     return $response->withHeader('Location', $this->get('router')->urlFor('products'))->withStatus(302);
 })->setName('remove');
