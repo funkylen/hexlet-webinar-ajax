@@ -6,6 +6,7 @@
     <title>Страница товаров</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
           integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="/assets/jquery-ui.css">
 </head>
 
 <body>
@@ -36,7 +37,7 @@
         <ul class="navbar-nav ml-auto">
             <li class="nav-item">
                 <a class="nav-link" href="{{ url_for('cart') }}">Корзина
-                    <span class="badge badge-primary">{{ cart|length }}</span>
+                    <span id="cart-counter" class="badge badge-primary">{{ cartCount }}</span>
                 </a>
             </li>
         </ul>
@@ -52,6 +53,7 @@
 <script src="https://code.jquery.com/jquery-3.7.0.min.js" integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g="
         crossorigin="anonymous"></script>
 <script src="/assets/jquery-ui.js"></script>
+<script src="/index.js"></script>
 
 
 </body>

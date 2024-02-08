@@ -2,7 +2,7 @@
 
 {% block content %}
     <form action="{{ url_for('products') }}" class="input-group mb-3">
-        <input value="{{ filter }}" id="search" type="text" class="form-control" placeholder="Введите запрос" aria-label="Введите запрос"
+        <input value="{{ filter }}" id="product-search" type="text" class="form-control" placeholder="Введите запрос" aria-label="Введите запрос"
                aria-describedby="basic-addon2" name="name">
 
         <div class="input-group-append">
@@ -27,15 +27,18 @@
 
                             <span class="text-muted">{{ product.price }}$</span>
                             <!-- Здесь разместите блок с ценой продукта, например, с классом card-subtitle и стилями для выделения -->
-                            {% if product.id in cart %}
-                                <form action="{{ url_for('remove', { 'product_id': product.id }) }}" method="post">
-                                    <button class="btn btn-outline-danger btn-sm">Убрать из корзины</button>
-                                </form>
-                            {% else %}
-                                <form action="{{ url_for('add', { 'product_id': product.id }) }}" method="post">
-                                    <button class="btn btn-primary btn-sm">Добавить в корзину</button>
-                                </form>
-                            {% endif %}
+                            <button {% if product.id not in cart %} style="display: none" {% endif %}
+                                    data-type="remove"
+                                    data-id="{{ product.id }}"
+                                    class="btn btn-outline-danger btn-sm">
+                                Убрать из корзины
+                            </button>
+                            <button {% if product.id in cart %} style="display: none" {% endif %}
+                                    data-type="add"
+                                    data-id="{{ product.id }}"
+                                    class="btn btn-primary btn-sm">
+                                Добавить в корзину
+                            </button>
 
                         </div>
                     </div>
